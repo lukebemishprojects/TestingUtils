@@ -29,7 +29,7 @@ public abstract class TestingUtilsExtension {
 
     @Inject
     public TestingUtilsExtension() {
-        getGradleRoots().convention(List.of("."));
+        getGradleRoots().add(".");
         getJavaVersion().convention("21");
     }
 
