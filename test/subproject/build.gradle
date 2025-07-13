@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+java.registerFeature('platformTest') {
+    usingSourceSet(sourceSets.create('platformTest'))
+    disablePublication()
+}
+
+testingUtils.makeTestingEnvironment(sourceSets.platformTest) {
+    testPackages.add('dev.lukebemish.testingutils.test')
+    modular = true
+}

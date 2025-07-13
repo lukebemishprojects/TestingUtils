@@ -1,0 +1,41 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'dev.lukebemish.testingutils'
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+    toolchain {
+        languageVersion.set JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    compileOnly cLibs.bundles.compileonly
+    annotationProcessor cLibs.bundles.annotationprocessor
+
+    api libs.junit.jupiter.api
+    implementation libs.junit.platform.launcher
+    runtimeOnly libs.junit.jupiter.engine
+    runtimeOnly libs.apiguardian
+    runtimeOnly libs.junit.platform.reporting
+
+    api platform(libs.junit.bom)
+}
+
+tasks.named('compileJava', JavaCompile).configure {
+    options.javaModuleMainClass = 'dev.lukebemish.testingutils.framework.Framework'
+}
+
+jar {
+    manifest {
+        attributes([
+            'Implementation-Version'   : (version as String),
+            'Specification-Version'   : (version as String).split("-")[0],
+            'Implementation-Commit-Time': managedVersioning.timestamp.get(),
+            'Implementation-Commit': managedVersioning.hash.get()
+        ])
+    }
+}

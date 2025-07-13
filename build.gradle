@@ -1,0 +1,41 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+    toolchain {
+        languageVersion.set JavaLanguageVersion.of(21)
+    }
+}
+
+gradlePlugin {
+    plugins {
+        testingUtils {
+            id = 'dev.lukebemish.testingutils'
+            displayName = 'Testing Utils'
+            description = 'A collection of utilities used in my projects for testing.'
+            implementationClass = 'dev.lukebemish.testingutils.TestingUtilsPlugin'
+        }
+    }
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation 'dev.lukebemish.managedversioning:dev.lukebemish.managedversioning.gradle.plugin:2.0.0-beta.7'
+    compileOnly cLibs.bundles.compileonly
+}
+
+group = 'dev.lukebemish'
+
+jar {
+    manifest {
+        attributes([
+            'Implementation-Version'   : (version as String),
+            'Specification-Version'   : (version as String).split("-")[0],
+            'Implementation-Commit-Time': managedVersioning.timestamp.get(),
+            'Implementation-Commit': managedVersioning.hash.get()
+        ])
+    }
+}

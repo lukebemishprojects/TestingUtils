@@ -1,0 +1,15 @@
+[versions]
+
+junit = "5.13.1"
+junit-platform = "1.13.3"
+apiguardian = "1.1.2"
+
+[libraries]
+
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
+junit-platform-reporting = { module = "org.junit.platform:junit-platform-reporting", version.ref = "junit-platform" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+
+apiguardian = { module = "org.apiguardian:apiguardian-api", version.ref = "apiguardian" }

@@ -1,0 +1,41 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url "https://maven.lukebemish.dev/releases/"
+        }
+    }
+    includeBuild '../'
+}
+
+plugins {
+    id 'dev.lukebemish.testingutils'
+    id 'dev.lukebemish.managedversioning' version '2.0.0-beta.7'
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://maven.lukebemish.dev/releases/"
+        }
+    }
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+}
+
+includeBuild '../'
+
+managedVersioning {
+    versionFile.set file('../version.properties')
+}
+
+testingUtils {
+    onBranches.add 'main'
+    platform {
+        enabled = true
+        javaVersions = ['21']
+        testEnvironmentProject = 'subproject'
+    }
+}
+
+include 'subproject'
