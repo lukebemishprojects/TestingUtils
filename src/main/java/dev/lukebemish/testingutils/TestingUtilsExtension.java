@@ -183,7 +183,7 @@ public abstract class TestingUtilsExtension {
         }
 
         public void exclude(String operatingSystem, String architecture, String javaVersion) {
-            getExcludes().add(new PlatformConfiguration(javaVersion, architecture, operatingSystem));
+            getExcludes().add(new PlatformConfiguration(operatingSystem, architecture, javaVersion));
         }
     }
 }

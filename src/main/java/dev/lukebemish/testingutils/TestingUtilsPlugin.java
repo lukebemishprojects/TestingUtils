@@ -55,6 +55,11 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                                     task.getOutputs().file(outputFile);
                                     task.getInputs().file(outPathProperty);
                                     task.mustRunAfter(target.getTestTask());
+                                    task.setEnabled(target.getTestTask().get().isEnabled());
+                                    var candidates = target.getTestTask().get().getCandidateClassFiles();
+                                    task.onlyIf(spec ->
+                                        !candidates.isEmpty()
+                                    );
                                     task.doLast(t -> {
                                         try (var is = Files.newInputStream(outPathProperty.get().getAsFile().toPath())) {
                                             var document = DocumentBuilderFactory.newNSInstance()
