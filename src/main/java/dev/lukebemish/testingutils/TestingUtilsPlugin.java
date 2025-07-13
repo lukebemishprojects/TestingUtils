@@ -132,7 +132,8 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                                 gradlew.getRunsOnError().set(true);
                             });
                         });
-                        gradleJob.upload("Upload Results", List.of("**/testingUtils/out/*-open-test-report.xml"), upload -> {
+                        gradleJob.upload("test-results-gradle", List.of("**/testingUtils/out/*-open-test-report.xml"), upload -> {
+                            upload.getName().set("Upload Results");
                             upload.getRunsOnError().set(true);
                             upload.getWith().put("retention-days", "1");
                         });
