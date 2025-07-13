@@ -10,6 +10,6 @@ public class TestTests {
 
     @Test
     void testAlwaysFail() {
-        fail();
+        assertEquals("Expected", "Actual");
     }
 }

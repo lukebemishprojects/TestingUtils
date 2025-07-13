@@ -1,0 +1,86 @@
+import proguard.gradle.ProGuardTask
+
+buildscript {
+    dependencies {
+        classpath libs.proguard
+    }
+}
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    alias libs.plugins.shadow
+
+}
+
+group = 'dev.lukebemish.testingutils'
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+    toolchain {
+        languageVersion.set JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+dependencies {
+    compileOnly cLibs.bundles.compileonly
+    annotationProcessor cLibs.bundles.annotationprocessor
+
+    implementation libs.picocli
+    implementation libs.open.test.reporting.tooling.core
+    implementation libs.open.test.reporting.events
+    // For the contributor implementation
+    runtimeOnly libs.junit.platform.reporting
+}
+
+jar {
+    manifest {
+        attributes([
+            'Implementation-Version'   : (version as String),
+            'Specification-Version'   : (version as String).split("-")[0],
+            'Implementation-Commit-Time': managedVersioning.timestamp.get(),
+            'Implementation-Commit': managedVersioning.hash.get(),
+            'Main-Class': 'dev.lukebemish.testingutils.cli.Main'
+        ])
+    }
+}
+
+components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
+    skip()
+}
+
+shadowJar {
+    archiveClassifier = 'shadow'
+    mergeServiceFiles()
+}
+
+tasks.register('proguardJar', ProGuardTask) {
+    def inputJar = tasks.named('shadowJar', AbstractArchiveTask).flatMap { it.archiveFile }
+    def outputJar = layout.buildDirectory.file("libs/${base.archivesName.get()}-${version}-all.jar")
+    injars inputJar
+    outjars outputJar
+
+    inputs.files(inputJar)
+    inputs.files('proguard.conf')
+    outputs.files(outputJar)
+
+    configuration 'proguard.conf'
+}
+
+assemble {
+    dependsOn proguardJar
+}

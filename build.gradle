@@ -3,6 +3,11 @@ plugins {
     id 'maven-publish'
 }
 
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 java {
     withSourcesJar()
     withJavadocJar()

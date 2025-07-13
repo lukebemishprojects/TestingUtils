@@ -1,10 +1,12 @@
 package dev.lukebemish.testingutils;
 
+import dev.lukebemish.managedversioning.Constants;
 import dev.lukebemish.managedversioning.ManagedVersioningExtension;
 import org.gradle.api.Plugin;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework;
 import org.gradle.api.plugins.jvm.JvmTestSuite;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.base.TestingExtension;
 import org.w3c.dom.Element;
@@ -16,19 +18,35 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 
 public class TestingUtilsPlugin implements Plugin<Settings> {
     private static final String NAMESPACE_URI = "https://schemas.lukebemish.dev/testingutils/0.1.0";
-    private static final String JUNIT_VERSION = "5.13.3";
 
     @Override
     public void apply(Settings settings) {
         var extension = settings.getExtensions().create("testingUtils", TestingUtilsExtension.class);
+        settings.getGradle().getSharedServices().registerIfAbsent(SourceDirectoryWriterService.class.getName(), SourceDirectoryWriterService.class, spec -> {
+            // Provide some parameters
+            spec.getParameters().getOutputFile().set(settings.getRootDir().toPath().resolve("build/testingUtils/source-directories.txt").toFile());
+        });
         settings.getGradle().getLifecycle().beforeProject(project -> {
             project.getExtensions().create("testingUtils", TestingUtilsProjectExtension.class);
+            var writeSourceDirectories = project.getTasks().register("testingUtilsWriteSourceDirectories", WriteSourceDirectoriesTask.class);
+            project.getPluginManager().withPlugin("java-base", applied -> {
+                project.afterEvaluate(p -> {
+                    var rootPath = p.getRootDir().toPath();
+                    p.getExtensions().getByType(SourceSetContainer.class).configureEach(sourceSet -> {
+                        for (var file : sourceSet.getAllSource().getSourceDirectories().getFiles()) {
+                            var relativePath = rootPath.relativize(file.toPath()).toString().replace(File.separatorChar, '/');
+                            writeSourceDirectories.get().getSourceDirectories().add(relativePath);
+                        }
+                    });
+                });
+            });
             var projectPath = project.getPath();
             project.getPluginManager().withPlugin("test-suite-base", applied -> {
                 project.afterEvaluate(p ->
@@ -137,7 +155,46 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                             upload.getRunsOnError().set(true);
                             upload.getWith().put("retention-days", "1");
                         });
+                        gradleJob.gradlew("Record Source Directories", List.of("testingUtilsWriteSourceDirectories"), step -> {
+                            step.getRunsOnError().set(true);
+                            step.getId().set("record-source-directories");
+                        });
+                        gradleJob.step(step -> {
+                            step.getRunsOnError().set(true);
+                            step.getRequiredSteps().add("record-source-directories");
+                            step.getName().set("Capture Source Directories");
+                            step.getId().set("capture-source-directories");
+                            step.getRun().set("echo sourcedirectories=$(cat build/testingUtils/source-directories.txt) >> \"$GITHUB_OUTPUT\"");
+                        });
+                        gradleJob.getOutputs().put("sourcedirectories", "${{ steps.capture-source-directories.outputs.sourcedirectories }}");
                     });
+                    /*action.job(job -> {
+                        job.getName().set("annotate-test-results");
+                        job.getRunsOn().set("ubuntu-latest");
+                        job.getIf().set("always()");
+                        job.getNeeds().add("check");
+                        if (platform.getEnabled().get()) {
+                            job.getNeeds().add("platform-test");
+                        }
+                        job.step(step -> {
+                            step.getName().set("Setup Java");
+                            step.getRun().set("echo \"JAVA_HOME=$JAVA_HOME_21_X64\" >> \"$GITHUB_ENV\"");
+                        });
+                        job.step(step -> {
+                            step.getName().set("Checkout");
+                            step.getUses().set(Constants.Versions.CHECKOUT);
+                            step.getWith().put("path", "repository");
+                        });
+                        job.step(step -> {
+                            step.getName().set("Download Test Results");
+                            step.getUses().set(Constants.Versions.DOWNLOAD_ARTIFACT);
+                            step.getWith().put("name", "test-results-*");
+                        });
+                        job.step(step -> {
+                            step.getName().set("Download TestingUtils CLI");
+                            step.getRun().set("curl -o open-test-reporting-cli.jar ???");
+                        });
+                    });*/
                     if (platform.getEnabled().get()) {
                         action.gradleJob(gradleJob -> {
                             gradleJob.getJavaVersion().set(javaVersion);

@@ -8,6 +8,6 @@ java.registerFeature('platformTest') {
 }
 
 testingUtils.makeTestingEnvironment(sourceSets.platformTest) {
-    testPackages.add('dev.lukebemish.testingutils.test')
+    testPackages.add('dev.lukebemish.testingutils.testsubproject')
     modular = true
 }

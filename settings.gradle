@@ -37,8 +37,15 @@ managedVersioning {
                 gradlew 'Build', 'build'
                 gradlew 'Publish', 'publish'
                 push()
-                mavenRelease('github')
+                recordVersion('Record Version', 'version')
+                step {
+                    name = 'Create Release'
+                    secret('GH_TOKEN', 'GITHUB_TOKEN')
+                    env.put('RELEASE_VERSION', '${{ steps.record_version_capture_version.outputs.version }}')
+                    run = 'gh release create $RELEASE_VERSION cli/build/libs/cli-$RELEASE_VERSION-all.jar'
+                }
                 dependencySubmission()
+                mavenRelease('github')
             }
         }
         snapshot {
@@ -90,4 +97,5 @@ dependencyResolutionManagement {
 rootProject.name = 'testingutils'
 
 include 'framework'
+include 'cli'
 

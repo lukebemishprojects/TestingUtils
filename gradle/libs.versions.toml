@@ -3,6 +3,11 @@
 junit = "5.13.1"
 junit-platform = "1.13.3"
 apiguardian = "1.1.2"
+picocli = "4.7.7"
+open-test-reporting = "0.2.4"
+
+proguard = "7.7.0"
+shadow = "9.0.0-rc1"
 
 [libraries]
 
@@ -13,3 +18,13 @@ junit-platform-reporting = { module = "org.junit.platform:junit-platform-reporti
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 
 apiguardian = { module = "org.apiguardian:apiguardian-api", version.ref = "apiguardian" }
+
+picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
+open-test-reporting-tooling-core = { module = "org.opentest4j.reporting:open-test-reporting-tooling-core", version.ref = "open-test-reporting" }
+open-test-reporting-events = { module = "org.opentest4j.reporting:open-test-reporting-events", version.ref = "open-test-reporting" }
+
+proguard = { module = "com.guardsquare:proguard-gradle", version.ref = "proguard" }
+
+[plugins]
+
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

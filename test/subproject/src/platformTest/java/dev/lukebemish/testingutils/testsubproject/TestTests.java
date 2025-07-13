@@ -1,4 +1,4 @@
-package dev.lukebemish.testingutils.test;
+package dev.lukebemish.testingutils.testsubproject;
 
 import dev.lukebemish.testingutils.framework.modulelayer.LayerBuilder;
 import dev.lukebemish.testingutils.framework.modulelayer.LayerTest;

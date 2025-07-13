@@ -87,6 +87,32 @@
                     "run": "git push && git push --tags"
                 },
                 {
+                    "name": "Record Version",
+                    "id": "record_version",
+                    "run": "./gradlew recordVersion",
+                    "env": {
+                        "BUILD_CACHE_PASSWORD": "${{ secrets.BUILD_CACHE_PASSWORD }}",
+                        "BUILD_CACHE_USER": "${{ secrets.BUILD_CACHE_USER }}",
+                        "BUILD_CACHE_URL": "${{ secrets.BUILD_CACHE_URL }}",
+                        "RELEASE_MAVEN_PASSWORD": "${{ secrets.RELEASE_MAVEN_PASSWORD }}",
+                        "RELEASE_MAVEN_USER": "github",
+                        "RELEASE_MAVEN_URL": "https://maven.lukebemish.dev/releases/"
+                    }
+                },
+                {
+                    "name": "Capture Recorded Version",
+                    "id": "record_version_capture_version",
+                    "run": "echo version=$(cat build/recordVersion.txt) >> \"$GITHUB_OUTPUT\""
+                },
+                {
+                    "name": "Create Release",
+                    "run": "gh release create $RELEASE_VERSION cli/build/libs/cli-$RELEASE_VERSION-all.jar",
+                    "env": {
+                        "GH_TOKEN": "${{ secrets.GITHUB_TOKEN }}",
+                        "RELEASE_VERSION": "${{ steps.record_version_capture_version.outputs.version }}"
+                    }
+                },
+                {
                     "name": "Submit Dependencies",
                     "uses": "gradle/actions/dependency-submission@v4",
                     "env": {
@@ -101,6 +127,9 @@
             ],
             "permissions": {
                 "contents": "write"
+            },
+            "outputs": {
+                "version": "${{ steps.record_version_capture_version.outputs.version }}"
             }
         }
     }
