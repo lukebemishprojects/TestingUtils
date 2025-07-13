@@ -2,7 +2,7 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         maven {
-            url "https://maven.lukebemish.dev/releases/"
+            url = "https://maven.lukebemish.dev/releases/"
         }
     }
     includeBuild '../'
@@ -17,7 +17,7 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
         maven {
-            url "https://maven.lukebemish.dev/releases/"
+            url = "https://maven.lukebemish.dev/releases/"
         }
     }
     repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
