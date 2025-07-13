@@ -22,10 +22,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Objects;
 
 public class TestingUtilsPlugin implements Plugin<Settings> {
     private static final String NAMESPACE_URI = "https://schemas.lukebemish.dev/testingutils/0.1.0";
+    private static final String IMPL_VERSION = Objects.requireNonNull(TestingUtilsPlugin.class.getPackage().getImplementationVersion());
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void apply(Settings settings) {
         var extension = settings.getExtensions().create("testingUtils", TestingUtilsExtension.class);
@@ -53,11 +56,8 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                     p.getExtensions().getByType(TestingExtension.class).getSuites().configureEach(suite -> {
                         if (suite instanceof JvmTestSuite jvmTestSuite) {
                             jvmTestSuite.dependencies(dependencies -> {
-                                var implVersion = TestingUtilsPlugin.class.getPackage().getImplementationVersion();
                                 var depString = "dev.lukebemish.testingutils:framework";
-                                if (implVersion != null) {
-                                    depString = depString + ":" + implVersion;
-                                }
+                                depString = depString + ":" + IMPL_VERSION;
                                 dependencies.getImplementation().add(
                                     depString
                                 );
@@ -168,8 +168,8 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                         });
                         gradleJob.getOutputs().put("sourcedirectories", "${{ steps.capture-source-directories.outputs.sourcedirectories }}");
                     });
-                    /*action.job(job -> {
-                        job.getName().set("annotate-test-results");
+                    action.job(job -> {
+                        job.getName().set("summarize-test-results");
                         job.getRunsOn().set("ubuntu-latest");
                         job.getIf().set("always()");
                         job.getNeeds().add("check");
@@ -189,12 +189,20 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                             step.getName().set("Download Test Results");
                             step.getUses().set(Constants.Versions.DOWNLOAD_ARTIFACT);
                             step.getWith().put("name", "test-results-*");
+                            step.getWith().put("path", "results");
                         });
                         job.step(step -> {
                             step.getName().set("Download TestingUtils CLI");
-                            step.getRun().set("curl -o open-test-reporting-cli.jar ???");
+                            step.getRun().set("curl -o testingutils-cli.jar https://github.com/lukebemishprojects/TestingUtils/releases/download/"+IMPL_VERSION+"/cli-"+IMPL_VERSION+"-all.jar");
                         });
-                    });*/
+                        job.step(step -> {
+                            step.getName().set("Annotate Test Results");
+                            step.getRun().set("""
+                                find results -name '*-test-report.xml' > reports.txt;
+                                java -jar testingutils-cli.jar annotate repository ${{needs.check.outputs.sourcedirectories}} @reports.txt
+                                """);
+                        });
+                    });
                     if (platform.getEnabled().get()) {
                         action.gradleJob(gradleJob -> {
                             gradleJob.getJavaVersion().set(javaVersion);
