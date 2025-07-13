@@ -15,8 +15,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
@@ -49,6 +51,7 @@ public class Main implements Callable<Integer> {
         List<Path> reports
     ) throws Exception {
         var potentialSourceRoots = sourceRoots.split(":");
+        Map<String, Set<String>> annotated = new HashMap<>();
         for (var path : reports) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -96,8 +99,9 @@ public class Main implements Callable<Integer> {
                         if (!throwables.isEmpty()) {
                             var throwable = throwables.getFirst();
                             var stackTrace = getCharacterDataFromElement(throwable);
-                            outer:
                             for (var line : (Iterable<String>) stackTrace.lines()::iterator) {
+                                // We annotate every location involved in the stack trace
+
                                 var matcher = STACKTRACE_AT_LINE.matcher(line);
                                 if (matcher.matches()) {
                                     var className = matcher.group(3);
@@ -122,10 +126,14 @@ public class Main implements Callable<Integer> {
                                             }
                                             var message = status+": "+String.join(" > ", parts.reversed());
 
-                                            System.out.println(
-                                                "::error file="+codeLocation.relativize(relativePath)+",line="+lineNumber+"::"+message
-                                            );
-                                            break outer;
+                                            var relativePathString = codeLocation.relativize(relativePath).toString();
+                                            var list = annotated.computeIfAbsent(relativePathString, k -> new HashSet<>());
+                                            if (list.add(message)) {
+                                                System.out.println(
+                                                    "::error file=" + relativePathString + ",line=" + lineNumber + "::" + message
+                                                );
+                                            }
+                                            break;
                                         }
                                     }
                                 }

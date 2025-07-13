@@ -199,7 +199,7 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                             step.getName().set("Annotate Test Results");
                             step.getRun().set("""
                                 find results -name '*-test-report.xml' > reports.txt;
-                                java -jar testingutils-cli.jar annotate repository ${{needs.check.outputs.sourcedirectories}} @reports.txt
+                                $JAVA_HOME/bin/java -jar testingutils-cli.jar annotate repository ${{needs.check.outputs.sourcedirectories}} @reports.txt
                                 """);
                         });
                     });
