@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
 }
 
 group = 'dev.lukebemish.testingutils'
@@ -9,6 +10,14 @@ java {
     withJavadocJar()
     toolchain {
         languageVersion.set JavaLanguageVersion.of(17)
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
     }
 }
 
