@@ -193,7 +193,7 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                         });
                         job.step(step -> {
                             step.getName().set("Download TestingUtils CLI");
-                            step.getRun().set("curl -o testingutils-cli.jar https://github.com/lukebemishprojects/TestingUtils/releases/download/"+IMPL_VERSION+"/cli-"+IMPL_VERSION+"-all.jar");
+                            step.getRun().set("curl -L -o testingutils-cli.jar https://github.com/lukebemishprojects/TestingUtils/releases/download/"+IMPL_VERSION+"/cli-"+IMPL_VERSION+"-all.jar");
                         });
                         job.step(step -> {
                             step.getName().set("Annotate Test Results");

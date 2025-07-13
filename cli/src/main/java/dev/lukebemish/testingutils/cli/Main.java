@@ -165,7 +165,7 @@ public class Main implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        System.out.println("Subcommand needed: 'prepare', 'process' or 'status'");
+        System.out.println("Subcommand needed; use --help for more information.");
         return -1;
     }
 
