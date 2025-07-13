@@ -188,7 +188,7 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                         job.step(step -> {
                             step.getName().set("Download Test Results");
                             step.getUses().set(Constants.Versions.DOWNLOAD_ARTIFACT);
-                            step.getWith().put("name", "test-results-*");
+                            step.getWith().put("pattern", "test-results-*");
                             step.getWith().put("path", "results");
                         });
                         job.step(step -> {
