@@ -88,9 +88,9 @@ public abstract class TestingUtilsExtension {
                     continue;
                 }
                 if (excludesList.stream().anyMatch(excluded ->
-                    (excluded.operatingSystem == null || platform.operatingSystem == null || excluded.operatingSystem.equals(platform.operatingSystem)) &&
-                        (excluded.architecture == null || platform.architecture == null || excluded.architecture.equals(platform.architecture)) &&
-                        (excluded.javaVersion == null || platform.javaVersion == null || excluded.javaVersion.equals(platform.javaVersion)))) {
+                    (excluded.operatingSystem == null || excluded.operatingSystem.equals(platform.operatingSystem)) &&
+                        (excluded.architecture == null || excluded.architecture.equals(platform.architecture)) &&
+                        (excluded.javaVersion == null || excluded.javaVersion.equals(platform.javaVersion)))) {
                     continue;
                 }
                 var map = new LinkedHashMap<String, String>();
