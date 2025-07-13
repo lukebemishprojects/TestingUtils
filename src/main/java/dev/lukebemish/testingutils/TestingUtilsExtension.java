@@ -50,7 +50,7 @@ public abstract class TestingUtilsExtension {
 
         void configurePlatformTestJob(Job job) {
             var strategy = new LinkedHashMap<String, Object>();
-            strategy.put("fail-fast", "false");
+            strategy.put("fail-fast", false);
             var matrix = new LinkedHashMap<String, Object>();
             strategy.put("matrix", matrix);
             var operatingSystems = getOperatingSystems().get();
