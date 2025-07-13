@@ -160,6 +160,9 @@ public final class LayerBuilder {
     private void close() throws IOException {
         var pending = new ArrayList<IOException>();
         for (var path : paths) {
+            if (!Files.exists(path)) {
+                continue;
+            }
             try {
                 Files.walkFileTree(path, new SimpleFileVisitor<>() {
                     @Override
