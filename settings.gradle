@@ -37,6 +37,7 @@ managedVersioning {
                 gradlew 'Build', 'build'
                 gradlew 'Publish', 'publish'
                 push()
+                mavenRelease('github')
                 dependencySubmission()
             }
         }
