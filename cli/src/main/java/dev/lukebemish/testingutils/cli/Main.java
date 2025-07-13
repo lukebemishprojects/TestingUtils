@@ -113,6 +113,8 @@ public class Main implements Callable<Integer> {
                                     var rest = classBinaryName.substring(0, classBinaryName.lastIndexOf('/'));
                                     var relative = rest + "/" + fileName + "." + extension;
                                     for (var root : potentialSourceRoots) {
+                                        // We place an annotation at every matching path, as we don't know which one it is...
+
                                         var relativePath = codeLocation.resolve(root).resolve(relative);
                                         if (Files.exists(relativePath)) {
                                             var parts = new ArrayList<String>();
@@ -133,7 +135,6 @@ public class Main implements Callable<Integer> {
                                                     "::error file=" + relativePathString + ",line=" + lineNumber + "::" + message
                                                 );
                                             }
-                                            break;
                                         }
                                     }
                                 }
