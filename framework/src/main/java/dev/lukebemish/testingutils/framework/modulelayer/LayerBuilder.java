@@ -85,7 +85,7 @@ public final class LayerBuilder {
         throw new Throwable();
     }
 
-    public <T extends Throwable> void fillStackTrace(T throwable) {
+    <T extends Throwable> void fillStackTrace(T throwable) {
         var executeThrowable = new Throwable();
         try {
             execute();
