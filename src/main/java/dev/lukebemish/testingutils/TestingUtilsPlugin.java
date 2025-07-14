@@ -202,6 +202,13 @@ public class TestingUtilsPlugin implements Plugin<Settings> {
                                 $JAVA_HOME/bin/java -jar testingutils-cli.jar annotate repository ${{needs.check.outputs.sourcedirectories}} @reports.txt
                                 """);
                         });
+                        job.step(step -> {
+                            step.getName().set("Make Summary");
+                            step.getRun().set("""
+                                find results -name '*-test-report.xml' > reports.txt;
+                                $JAVA_HOME/bin/java -jar testingutils-cli.jar summary $GITHUB_STEP_SUMMARY @reports.txt
+                                """);
+                        });
                     });
                     if (platform.getEnabled().get()) {
                         action.gradleJob(gradleJob -> {
