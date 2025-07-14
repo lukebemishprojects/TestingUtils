@@ -148,8 +148,8 @@ public class Main implements Callable<Integer> {
                                                 var message = status + ": " + String.join(" > ", parts.reversed());
 
                                                 var relativePathString = codeLocation.relativize(relativePath).toString();
-                                                var list = annotated.computeIfAbsent(relativePathString, k -> new HashSet<>());
-                                                if (list.add(message)) {
+                                                var set = annotated.computeIfAbsent(relativePathString, k -> new HashSet<>());
+                                                if (set.add(actualLineNumber + "::" + message)) {
                                                     System.out.println(
                                                         "::error file=" + relativePathString + ",line=" + actualLineNumber + "::" + escapeData(message)
                                                     );
