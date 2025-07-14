@@ -28,6 +28,8 @@ publishing {
 
 dependencies {
     compileOnly cLibs.bundles.compileonly
+    compileOnlyApi cLibs.jetbrains.annotations
+    compileOnlyApi cLibs.jspecify
     annotationProcessor cLibs.bundles.annotationprocessor
 
     api libs.junit.jupiter.api
