@@ -13,7 +13,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -99,6 +98,8 @@ public class Main implements Callable<Integer> {
                         if (!throwables.isEmpty()) {
                             var throwable = throwables.getFirst();
                             var stackTrace = getCharacterDataFromElement(throwable);
+                            int lastLineOffset = 0;
+                            boolean lastWasLayerBuilderExecute = false;
                             for (var line : (Iterable<String>) stackTrace.lines()::iterator) {
                                 // We annotate every location involved in the stack trace
 
@@ -109,33 +110,54 @@ public class Main implements Callable<Integer> {
                                     var extension = matcher.group(6);
                                     var lineNumber = matcher.group(7);
 
-                                    var classBinaryName = className.replace('.', '/');
-                                    var rest = classBinaryName.substring(0, classBinaryName.lastIndexOf('/'));
-                                    var relative = rest + "/" + fileName + "." + extension;
-                                    for (var root : potentialSourceRoots) {
-                                        // We place an annotation at every matching path, as we don't know which one it is...
+                                    if ("dev.lukebemish.testingutils.framework.modulelayer.LayerBuilder".equals(className) && "execute".equals(matcher.group(4))) {
+                                        // We are running a layer test with a modified-to-be-more-informative stacktrace
+                                        lastWasLayerBuilderExecute = true;
+                                    } else {
+                                        var classBinaryName = className.replace('.', '/');
+                                        var rest = classBinaryName.substring(0, classBinaryName.lastIndexOf('/'));
+                                        var relative = rest + "/" + fileName + "." + extension;
+                                        for (var root : potentialSourceRoots) {
+                                            // We place an annotation at every matching path, as we don't know which one it is...
 
-                                        var relativePath = codeLocation.resolve(root).resolve(relative);
-                                        if (Files.exists(relativePath)) {
-                                            var parts = new ArrayList<String>();
-                                            Integer currentId = id;
-                                            while (currentId != null) {
-                                                parts.add(eventNames.getOrDefault(currentId, "<unknown>"));
-                                                currentId = eventParents.get(currentId);
-                                            }
-                                            if (testingUtilsId != null) {
-                                                parts.add(testingUtilsId);
-                                            }
-                                            var message = status+": "+String.join(" > ", parts.reversed());
+                                            var relativePath = codeLocation.resolve(root).resolve(relative);
+                                            if (Files.exists(relativePath)) {
+                                                var actualLineNumber = Integer.parseInt(lineNumber);
+                                                if (lastWasLayerBuilderExecute) {
+                                                    var sourceLines = Files.readAllLines(relativePath);
+                                                    if (sourceLines.size() >= actualLineNumber) {
+                                                        var lineValue = sourceLines.get(actualLineNumber - 1).trim();
+                                                        if (lineValue.endsWith("\"\"\"")) {
+                                                            // We only bother figuring out this particularly simple case
+                                                            actualLineNumber += lastLineOffset;
+                                                        }
+                                                    }
+                                                }
 
-                                            var relativePathString = codeLocation.relativize(relativePath).toString();
-                                            var list = annotated.computeIfAbsent(relativePathString, k -> new HashSet<>());
-                                            if (list.add(message)) {
-                                                System.out.println(
-                                                    "::error file=" + relativePathString + ",line=" + lineNumber + "::" + message
-                                                );
+                                                var parts = new ArrayList<String>();
+                                                Integer currentId = id;
+                                                while (currentId != null) {
+                                                    parts.add(eventNames.getOrDefault(currentId, "<unknown>"));
+                                                    currentId = eventParents.get(currentId);
+                                                }
+                                                if (testingUtilsId != null) {
+                                                    parts.add(testingUtilsId);
+                                                }
+                                                var message = status + ": " + String.join(" > ", parts.reversed());
+
+                                                var relativePathString = codeLocation.relativize(relativePath).toString();
+                                                var list = annotated.computeIfAbsent(relativePathString, k -> new HashSet<>());
+                                                if (list.add(message)) {
+                                                    System.out.println(
+                                                        "::error file=" + relativePathString + ",line=" + actualLineNumber + "::" + escapeData(message)
+                                                    );
+                                                }
                                             }
                                         }
+                                        if (lastWasLayerBuilderExecute) {
+                                            lastWasLayerBuilderExecute = false;
+                                        }
+                                        lastLineOffset = Integer.parseInt(lineNumber);
                                     }
                                 }
                             }

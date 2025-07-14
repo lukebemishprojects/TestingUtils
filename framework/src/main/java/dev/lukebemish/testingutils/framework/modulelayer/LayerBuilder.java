@@ -79,7 +79,19 @@ public final class LayerBuilder {
 
     private final Map<String, StackTraceElement> javaInitialLocations = new HashMap<>();
 
+    private void execute() throws Throwable {
+        // This is a stub; in stack traces, execution of tests within this LayerBuilder will be represented
+        // by a call to this method.
+        throw new Throwable();
+    }
+
     public <T extends Throwable> void fillStackTrace(T throwable) {
+        var executeThrowable = new Throwable();
+        try {
+            execute();
+        } catch (Throwable t) {
+            executeThrowable = t;
+        }
         var stackTrace = new ArrayList<>(List.of(throwable.getStackTrace()));
         var iterator = stackTrace.listIterator();
         while (iterator.hasNext()) {
@@ -88,6 +100,7 @@ public final class LayerBuilder {
                 var identifyingString = element.getModuleName() + "/" + element.getClassName();
                 var initialLocation = javaInitialLocations.get(identifyingString);
                 if (initialLocation != null) {
+                    iterator.add(executeThrowable.getStackTrace()[0]);
                     iterator.add(initialLocation);
                 }
             }

@@ -15,7 +15,12 @@ public class TestTests implements TestInheritanceInterface {
                     @Test
                     void testImportsWork() {
                         Function<String, String> function = s -> s;
-                    }"""));
+                    }
+                    @Test
+                    void testFails() {
+                        fail();
+                    }
+                    """));
     }
 
     @Test
